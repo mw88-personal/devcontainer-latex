@@ -1,0 +1,113 @@
+# latexindent can be called to act on a file without using the file's extension,
+# e.g, simply
+#       latexindent myfile
+# in which case the choice of file extension is chosen
+# according to the choices made in fileExtensionPreference
+# Other file extensions can be added.
+fileExtensionPreference:
+    .tex: 1
+    .sty: 2
+    .cls: 3
+    .bib: 4
+
+
+# indent preamble
+indentPreamble: 0
+
+lookForPreamble:
+   .tex: 1
+   .sty: 0
+   .cls: 1
+   .bib: 0
+
+# Default value of indentation
+defaultIndent: "  "
+
+# if you want to add indentation after
+# a heading, such as \part, \chapter, etc
+# then populate it in here - you can add
+# an indent rule to indentRules if you would
+# like something other than defaultIndent
+#
+# you can also change the level if you like,
+# or add your own title command
+indentAfterHeadings:
+    part:
+       indentAfterThisHeading: 0
+       level: 1
+    chapter:
+       indentAfterThisHeading: 1
+       level: 2
+    section:
+       indentAfterThisHeading: 1
+       level: 4
+    subsection:
+       indentAfterThisHeading: 1
+       level: 8
+    subsection*:
+       indentAfterThisHeading: 0
+       level: 9
+    subsubsection:
+       indentAfterThisHeading: 0
+       level: 10
+    paragraph:
+       indentAfterThisHeading: 0
+       level: 11
+    subparagraph:
+       indentAfterThisHeading: 0
+       level: 12
+
+indentAfterItems:
+   tikzpicture: 1
+itemNames:
+    path: 1
+    node: 1
+    draw: 1
+
+lookForAlignDelims:
+    align*:
+        alignDoubleBackSlash: 1
+    align:
+        alignDoubleBackSlash: 1
+    aligned:
+        alignDoubleBackSlash: 1
+    tabular:
+        delims: 1
+        alignDoubleBackSlash: 1
+        spacesBeforeDoubleBackSlash: 1
+        multiColumnGrouping: 0
+        alignRowsWithoutMaxDelims: 0
+        spacesBeforeAmpersand: 1
+        spacesAfterAmpersand: 1
+        justification: left
+        alignFinalDoubleBackSlash: 0
+        dontMeasure: 0
+        delimiterRegEx: '(?<!\\)(&)'
+        delimiterJustification: left
+        lookForChildCodeBlocks: 1
+    tabularx:
+        delims: 1
+
+# set noAdditionalIndent globally for codeblocks
+noAdditionalIndentGlobal:
+    environments: 0
+    commands: 1
+    optionalArguments: 0
+    mandatoryArguments: 0
+    ifElseFi: 0
+    items: 0
+    keyEqualsValuesBracesBrackets: 1
+    namedGroupingBracesBrackets: 1
+    UnNamedGroupingBracesBrackets: 1
+    specialBeginEnd: 0
+    afterHeading: 0
+    filecontents: 0
+
+# if you don't want to have additional indentation
+# in a code block, then add it to noAdditionalIndent; note that
+# code blocks in this field will inherit
+# the *current* level of indentation they just won't
+# get any *additional* indentation
+noAdditionalIndent:
+    problem: 0
+    solution: 0
