@@ -1,4 +1,4 @@
-selected_scheme scheme-basic
+selected_scheme scheme-full
 instopt_letter 0
 
 instopt_write18_restricted 0

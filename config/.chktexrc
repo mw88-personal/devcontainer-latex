@@ -1,0 +1,9 @@
+CmdLine
+{
+
+}
+
+TeXInputs
+{
+    ./src//
+}

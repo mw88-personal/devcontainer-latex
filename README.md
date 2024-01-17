@@ -1,18 +1,29 @@
 # Repository for building my custome VScode latex development container
 
 
+## Features
+* intended to be used as a devcontainer in VSCode
+* TeXlive 2023, ``scheme-full``
+* preconfigured chktex
+* preconfigured latexindent
+* git, uses host credentials by default
+* ``openssh-client``, required for properly working with git. If used in vscode, shares host keychain.
+* gnuplot
+* bash with oh-my-posh for better shell
+* prerequistites for ``minted`` package installed, i.e. python, pygmentize
+
 ## Usage
 
 ## Build instructsions
-Build using ``-t`` to tag the image as **latextest** (Name should be changed later).
+Build using ``-t`` to tag the image as **devcontainer-latex:0.9.0** (Name should be changed later).
 ~~~cmd
- docker buildx build  . -t latextest
+ docker buildx build  . -t devcontainer-latex:0.9.0
 ~~~
 * ``buildx`` is necessary to use the docker buildkit, which enables the usage of heredoc syntax for cleaner multiline commands.
 
 For debugging, you can run the container and enter an interactive shell session:
 ~~~cmd
-docker run -it --rm latextest /bin/bash
+docker run -it --rm devcontainer-latex:0.9.0 /bin/bash
 ~~~
 
 
@@ -48,13 +59,6 @@ docker run -it --rm latextest /bin/bash
     ~~~
     I keep the mounting point in the docker-compose file as instructions on how to mount the global host .gitconfig from a custom location.
 
-* TODO: include minted into final container
-* TODO: use scheme-full in final
-* TODO: optional: include gnuplot
-* TODO: update readme
-* TODO: push into public repo
-
-apt-get install openssh-client
 
 # SSH agent
 ## Install SSH agent on windows client

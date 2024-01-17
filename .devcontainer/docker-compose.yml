@@ -5,7 +5,7 @@ services:
     # build:
     #   context: .
     #   dockerfile: Dockerfile
-    image: latextest
+    image: noctuidus/devcontainer-latex:0.9.0
     # image: qmcgaw/latexdevcontainer:latest-full
     volumes:
       # mount the workspace into the dev-container
@@ -13,7 +13,7 @@ services:
         source: ../
         target: /workspace
       # Docker socket to access Docker server
-      # - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock
       # SSH directory
       # - ~/.ssh:/root/.ssh
       # For Windows without WSL, a copy will be made

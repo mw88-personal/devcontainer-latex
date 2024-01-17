@@ -3,11 +3,13 @@
 ARG DEBIAN_VERSION=12.4-slim
 ARG TEXLIVE_VERSION=2023
 ARG TEXLIVE_MIRROR=http://ctan.math.utah.edu/ctan/tex-archive/systems/texlive/tlnet
+ARG CHKTEX_VERSION=1.7.8
+ARG PERL_VERSION=5.38
 
 # build chktex in temporary container
 FROM debian:${DEBIAN_VERSION}  as chktex-builder
-ARG CHKTEX_VERSION=1.7.8
-WORKDIR /tmp/chktex
+ARG CHKTEX_VERSION CHKTEX_VERSION
+WORKDIR /tmp/chktex-builddir
 RUN <<EOF
     apt-get update -y
     apt-get install -y --no-install-recommends build-essential ca-certificates make wget
@@ -20,11 +22,8 @@ EOF
 
 
 # build texlive in temporary container
-FROM perl:5.38 AS texlive-builder
+FROM perl:${PERL_VERSION} AS texlive-builder
 WORKDIR /tmp/texlive
-ARG SCHEME=scheme-basic
-ARG DOCFILES=0
-ARG SRCFILES=0
 ARG TEXLIVE_VERSION TEXLIVE_VERSION
 ARG TEXLIVE_MIRROR TEXLIVE_MIRROR
 
@@ -63,25 +62,45 @@ RUN <<EOF
     rm -rf /usr/local/share/*
 EOF
 
+FROM debian:${DEBIAN_VERSION} AS ohmyposh-builder
 
-# FROM debian:${DEBIAN_VERSION} as git-builder
+RUN <<EOF
+    apt-get update -y
+    apt-get install -y --no-install-recommends curl ca-certificates unzip
+    rm -r /var/cache/* /var/lib/apt/lists/*
+    curl -s https://ohmyposh.dev/install.sh | bash -s
+    # debuggin /testing
+    printf "eval \"\$(oh-my-posh --init --shell bash --config /root/.ohmyposh/theme.omp.json)\"" >> ~/.bashrc
+EOF
 
-# WORKDIR /tmp/builder
+COPY config/theme.omp.json /root/.ohmyposh/theme.omp.json
 
-
-
-
-# FROM perl:5.28-slim
-# COPY --from=builder /usr/local/lib/perl5 /usr/local/lib/perl5
 
 FROM debian:${DEBIAN_VERSION} AS main
 
 ARG TEXLIVE_VERSION TEXLIVE_VERSION
 
-COPY --from=chktex-builder /tmp/chktex /usr/local/bin/chktex
+# Timezone
+RUN <<EOF
+    apt-get update -y
+    apt-get install -y --no-install-recommends tzdata
+    rm -r /var/cache/* /var/lib/apt/lists/*
+EOF
+ENV TZ=
+
+
 COPY --from=texlive-builder /usr/local /usr/local
+COPY --from=chktex-builder /tmp/chktex /usr/local/bin/chktex
 COPY config/.indentconfig.yaml /root/.indentconfig.yaml
 COPY config/defaultSettings.yaml /root/.latexindent/defaultSettings.yaml
+# copy configuration file for chktex
+# can be overriden by config files in project directory with names .chktexrc (on linux) and chktexrc (on windows)
+COPY config/.chktexrc /root/.chktexrc
+
+
+# copy required ohmyposh files
+COPY --from=ohmyposh-builder /usr/local/bin /usr/local/bin
+COPY config/theme.omp.json /root/.ohmyposh/theme.omp.json
 
 
 ENV PATH="${PATH}:/usr/local/texlive/${TEXLIVE_VERSION}/bin/x86_64-linux:/usr/local/texlive/${TEXLIVE_VERSION}/bin/aarch64-linux"
@@ -89,10 +108,23 @@ ENV PATH="${PATH}:/usr/local/texlive/${TEXLIVE_VERSION}/bin/x86_64-linux:/usr/lo
 # add git and ssh support
 RUN <<EOF
     apt-get update -y
-    apt-get install -y --no-install-recommends openssh-client git
+    apt-get install -y --no-install-recommends openssh-client git python3 locales python3-pygments gnuplot
+    ln -s /usr/bin/python3 /usr/bin/python
     apt-get clean autoclean
     apt-get autoremove -y
     rm -rf /var/lib/apt/lists/*
+
+
+
+    # add ohmyposh configuration to shell
+    printf "eval \"\$(oh-my-posh --init --shell bash --config /root/.ohmyposh/theme.omp.json)\"" >> ~/.bashrc
+
+    # Set the locale
+    sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
+    sed -i -e 's/# de_DE.UTF-8 UTF-8/de_DE.UTF-8 UTF-8/' /etc/locale.gen
+    dpkg-reconfigure --frontend=noninteractive locales
 EOF
+
+
 
 

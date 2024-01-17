@@ -57,12 +57,12 @@ indentAfterHeadings:
        indentAfterThisHeading: 0
        level: 12
 
-indentAfterItems:
-   tikzpicture: 1
-itemNames:
-    path: 1
-    node: 1
-    draw: 1
+# indentAfterItems:
+#    tikzpicture: 1
+# itemNames:
+#     path: 1
+#     node: 1
+#     draw: 1
 
 lookForAlignDelims:
     align*:
@@ -91,14 +91,14 @@ lookForAlignDelims:
 # set noAdditionalIndent globally for codeblocks
 noAdditionalIndentGlobal:
     environments: 0
-    commands: 1
+    commands: 0
     optionalArguments: 0
     mandatoryArguments: 0
     ifElseFi: 0
     items: 0
-    keyEqualsValuesBracesBrackets: 1
-    namedGroupingBracesBrackets: 1
-    UnNamedGroupingBracesBrackets: 1
+    keyEqualsValuesBracesBrackets: 0
+    namedGroupingBracesBrackets: 0
+    UnNamedGroupingBracesBrackets: 0
     specialBeginEnd: 0
     afterHeading: 0
     filecontents: 0
@@ -108,6 +108,6 @@ noAdditionalIndentGlobal:
 # code blocks in this field will inherit
 # the *current* level of indentation they just won't
 # get any *additional* indentation
-noAdditionalIndent:
-    problem: 0
-    solution: 0
+# noAdditionalIndent:
+#    problem: 0
+#    solution: 0
