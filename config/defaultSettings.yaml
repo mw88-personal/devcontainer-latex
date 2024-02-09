@@ -57,6 +57,10 @@ indentAfterHeadings:
        indentAfterThisHeading: 0
        level: 12
 
+
+indentAfterItems:
+   enumref: 1
+   enumref*: 1
 # indentAfterItems:
 #    tikzpicture: 1
 # itemNames:
