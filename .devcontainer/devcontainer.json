@@ -21,7 +21,7 @@
             ],
             "settings": {
                 // General settings
-                "files.eol": "\n",
+                // "files.eol": "\n",
                 // Latex settings
                 // "latex-workshop.latex.clean.subfolder.enabled": true,
                 // "latex-workshop.latex.autoClean.run": "onBuilt",
