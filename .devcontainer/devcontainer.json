@@ -1,5 +1,5 @@
 {
-    "name": "project-dev",
+    "name": "${localWorkspaceFolder}",
     "dockerComposeFile": [
         "docker-compose.yml"
     ],
@@ -8,7 +8,10 @@
         "vscode"
     ],
     "shutdownAction": "stopCompose",
-    "workspaceFolder": "/workspace",
+    "mounts": [
+        "source=${localWorkspaceFolder},target=/ws,type=bind"
+    ],
+    "workspaceFolder": "/ws",
     "postCreateCommand": "",
     "customizations": {
         "vscode": {

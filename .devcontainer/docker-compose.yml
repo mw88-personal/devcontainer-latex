@@ -9,9 +9,9 @@ services:
     # image: qmcgaw/latexdevcontainer:latest-full
     volumes:
       # mount the workspace into the dev-container
-      - type: bind
-        source: ../
-        target: /workspace
+      # - type: bind
+      #   source: ../
+      #   target: /workspace
       # Docker socket to access Docker server
       - /var/run/docker.sock:/var/run/docker.sock
       # SSH directory
