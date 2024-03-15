@@ -14,7 +14,7 @@
 
 ## Usage
 
-## Build instructsions
+## Build instructions
 Build using ``-t`` to tag the image as **devcontainer-latex:0.9.0** (Name should be changed later).
 ~~~cmd
  docker buildx build  . -t devcontainer-latex:0.9.0
@@ -25,6 +25,12 @@ For debugging, you can run the container and enter an interactive shell session:
 ~~~cmd
 docker run -it --rm devcontainer-latex:0.9.0 /bin/bash
 ~~~
+
+After building, upload the new image:
+~~~cmd
+docker image push noctuidus/devcontainer-latex:0.9.0
+~~~
+where ``noctuidus`` is the docker username.
 
 
 # (temporary) Notes and thoughts
