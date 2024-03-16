@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.4
 
 ARG DEBIAN_VERSION=12.4-slim
-ARG TEXLIVE_VERSION=2023
+ARG TEXLIVE_VERSION=2024
 ARG TEXLIVE_MIRROR=http://ctan.math.utah.edu/ctan/tex-archive/systems/texlive/tlnet
 ARG CHKTEX_VERSION=1.7.8
 ARG PERL_VERSION=5.38
@@ -61,6 +61,7 @@ RUN <<EOF
     rm -rf /usr/local/texlive/${TEXLIVE_VERSION}/*.log
     rm -rf /usr/local/share/*
 EOF
+COPY texmf-local /usr/local/texlive/texmf-local
 
 FROM debian:${DEBIAN_VERSION} AS ohmyposh-builder
 
@@ -123,6 +124,9 @@ RUN <<EOF
     sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
     sed -i -e 's/# de_DE.UTF-8 UTF-8/de_DE.UTF-8 UTF-8/' /etc/locale.gen
     dpkg-reconfigure --frontend=noninteractive locales
+
+    # index packaged fonts for luaotfload
+    luaotfload-tool -v -vvv -u
 EOF
 
 

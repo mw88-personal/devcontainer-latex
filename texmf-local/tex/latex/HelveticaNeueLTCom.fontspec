@@ -1,0 +1,16 @@
+\defaultfontfeatures[HelveticaNeueLTCom]
+{
+    UprightFont = {*-Th},
+    BoldFont = {*-Bd},
+    Extension = {.ttf},
+    FontFace = {lt}{n}{*-Th},
+    FontFace = {l}{n}{*-Th},
+    FontFace = {ltx}{n}{*-ThEx},
+    FontFace = {mdc}{n}{*-LtCn},
+    FontFace = {m}{n}{*-Lt},
+    FontFace = {md}{n}{*-Lt},
+    FontFace = {mdx}{n}{*-LtEx},
+    FontFace = {b}{n}{*-Bd},
+    FontFace = {bx}{n}{*-BdEx},
+    FontFace = {bc}{n}{*-BdCn}
+}
