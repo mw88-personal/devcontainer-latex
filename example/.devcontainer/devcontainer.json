@@ -1,0 +1,107 @@
+{
+    "name": "${localWorkspaceFolder}",
+    "dockerComposeFile": [
+        "docker-compose.yml"
+    ],
+    "service": "vscode",
+    "runServices": [
+        "vscode"
+    ],
+    "features": {
+        "ghcr.io/devcontainers/features/git:1": {}
+    },
+    "shutdownAction": "stopCompose",
+    "mounts": [
+        "source=${localWorkspaceFolder},target=/ws,type=bind",
+        "source=${env:SSH_AUTH_SOCK},target=/ssh-agent,type=bind,consistency=cached",
+        "source=${localEnv:USERPROFILE}/.gitconfig,target=/home/dev/.gitconfig,type=bind,consistency=cached"
+    ],
+    "workspaceFolder": "/ws",
+    "postCreateCommand": "",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "james-yu.latex-workshop",
+                // Other
+                // "vscode-icons-team.vscode-icons" // keep icons from default profile
+                /* add toto comment highlighting */
+                "Gruntfuggly.todo-tree",
+                "ms-vscode-remote.remote-containers",
+                "redhat.vscode-yaml",
+                "streetsidesoftware.code-spell-checker",
+                "aaron-bond.better-comments"
+            ],
+            "settings": {
+                // General settings
+                // "files.eol": "\n",
+                // Latex settings
+                // "latex-workshop.latex.clean.subfolder.enabled": true,
+                // "latex-workshop.latex.autoClean.run": "onBuilt",
+                "latex-workshop.latex.recipe.default": "latexmk (latexmkrc)",
+                "latex-workshop.intellisense.package.enabled": true,
+                "latex-workshop.intellisense.package.env.enabled": true,
+                /* autobuild is a bad idea on long documents: */
+                "latex-workshop.latex.autoBuild.run": "never",
+                "latex-workshop.latex.autoClean.run": "never",
+                "latex-workshop.showContextMenu": true,
+                /* no error popups, use "Problems" tab instead: */
+                "latex-workshop.message.error.show": false,
+                /* no warning popups, use "Problems" tab instead: */
+                "latex-workshop.message.warning.show": false,
+                "latex-workshop.view.pdf.hand": true,
+                /* inline preview uses mathjax and is generally slow and buggy for longer equations: */
+                "latex-workshop.synctex.synctexjs.enabled": true,
+                /* provides debugging information of every step of the recipe */
+                "latex-workshop.latex.build.clearLog.everyRecipeStep.enabled": false,
+                "latex-workshop.hover.preview.enabled": false,
+                "editor.formatOnSave": true,
+                "files.associations": {
+                    "*.tex": "latex",
+                    "*.tikz": "latex",
+                    "*.cls": "latex-expl3",
+                    "*.sty": "latex-expl3",
+                    "*.clo": "latex-expl3"
+                },
+                "latex-workshop.formatting.latex": "latexindent",
+                "latex-workshop.formatting.latexindent.args": [
+                    "-c",
+                    "%DIR%/",
+                    "%TMPFILE%"
+                ],
+                /* chktex settings */
+                "latex-workshop.check.duplicatedLabels.enabled": true,
+                "latex-workshop.linting.chktex.exec.path": "chktex",
+                "latex-workshop.linting.chktex.enabled": true, /* force document authors to adress all the small details aboput good latex code */
+                "latex-workshop.linting.chktex.exec.args": [
+                    "-wall", /* turn warning on for all messages */
+                    "-n22", /* turn warning off for comment environments */
+                    "-n30", /* turn warning off for multiple consecutive whitespaces */
+                    "-e16", /* mathmode at end of file results in ERROR */
+                    "-q", /* no copyright notice */
+                    "-n21", /* */
+                    "-n18" /* toggle off warning about German quotation marks */
+                ],
+                /* since the projects are configured by latexmkrc to compile to a builddir, we need to tell vscode where to look for the files*/
+                "latex-workshop.latex.outDir": "build",
+                /* since the whole build process is governed by latexmk, we do not need any other recipes or tools*/
+                "latex-workshop.latex.tools": [
+                    {
+                        "name": "latexmk_rconly",
+                        "command": "latexmk",
+                        "args": [],
+                        "env": {}
+                    }
+                ],
+                "latex-workshop.latex.recipes": [
+                    {
+                        "name": "latexmk (latexmkrc)",
+                        "tools": [
+                            "latexmk_rconly"
+                        ]
+                    }
+                ]
+            },
+            "remoteUser": "dev"
+        }
+    }
+}

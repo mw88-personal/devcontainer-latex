@@ -1,79 +1,67 @@
-# Repository for building my custome VScode latex development container
+# LaTeX Devcontainer (TeX Live 2025)
 
+A VS Code devcontainer for LaTeX development with TeX Live 2025, LuaHBTeX, latexmk, chktex, latexindent, and Oh My Posh.
 
 ## Features
-* intended to be used as a devcontainer in VSCode
-* TeXlive 2023, ``scheme-full``
-* preconfigured chktex
-* preconfigured latexindent
-* git, uses host credentials by default
-* ``openssh-client``, required for properly working with git. If used in vscode, shares host keychain.
-* gnuplot
-* bash with oh-my-posh for better shell
-* prerequistites for ``minted`` package installed, i.e. python, pygmentize
+- Non-root user (`dev`, UID/GID 1000).
+- TeXlive 2025, ``scheme-full``
+- preconfigured chktex
+- preconfigured latexindent
+- git, uses host credentials by default
+- gnuplot
+- prerequistites for ``minted`` package installed, i.e. python, pygmentize
+- imagemagick
+- bash with oh-my-posh for better shell
+- Prebuilt font cache for `luaotfload`.
+- Configured for LuaLaTeX compilation.
+- ``openssh-client``, required for properly working with git. If used in vscode, shares host keychain.
 
-## Usage
+## Getting Started
+1. Clone: `git clone https://github.com/noctuidus/latex-devcontainer`
+2. Open the example: `cd example && code .`
+3. Run ``Dev Containers: Reopen in Container``.
+4. Test:
+   ```bash
+   cd /ws
+   latexmk
+   ```
+   Output: `build/example.pdf` (open with a PDF viewer).
 
-## Build instructions
-Build using ``-t`` to tag the image as **devcontainer-latex:0.9.0** (Name should be changed later).
-~~~cmd
- docker buildx build  . -t devcontainer-latex:0.9.0
-~~~
-* ``buildx`` is necessary to use the docker buildkit, which enables the usage of heredoc syntax for cleaner multiline commands.
+## Configuration Files
+| Repository File                    | Container Location                            | Purpose                        |
+| ---------------------------------- | --------------------------------------------- | ------------------------------ |
+| `config/chktex-config.rc`          | `/home/dev/.chktexrc`                         | `chktex` linter configuration  |
+| `config/latexindent-config.yaml`   | `/home/dev/.indentconfig.yaml`                | `latexindent` configuration    |
+| `config/latexindent-settings.yaml` | `/home/dev/.latexindent/defaultSettings.yaml` | `latexindent` default settings |
+| `config/texlive-profile.tlp`       | `/tmp/texlive/tl.profile`                     | TeX Live installation profile  |
+| `config/ohmyposh-theme.json`       | `/home/dev/.ohmyposh/theme.omp.json`          | Oh My Posh shell theme         |
 
-For debugging, you can run the container and enter an interactive shell session:
-~~~cmd
-docker run -it --rm devcontainer-latex:0.9.0 /bin/bash
-~~~
+## Reuse in Other Projects
+### Option 1: Use Prebuilt Image (Recommended)
+Download `latex-devcontainer-minimal.zip` from [Releases](https://github.com/noctuidus/latex-devcontainer/releases) and extract to your project's `.devcontainer/`. It contains `devcontainer.json` and `docker-compose.yml` configured for `noctuidus/devcontainer-latex:<tag>`.
 
-After building, upload the new image:
-~~~cmd
-docker image push noctuidus/devcontainer-latex:0.9.0
-~~~
-where ``noctuidus`` is the docker username.
+### Option 2: Build Locally
+Download `latex-devcontainer-full.zip` from [Releases](https://github.com/noctuidus/latex-devcontainer/releases) and extract to your project's `.devcontainer/`. Build the image:
+```bash
+cd .devcontainer
+docker build -t latex-devcontainer .
+```
 
+## Releases
+Releases are automatically generated via GitHub Actions:
+- `latex-devcontainer-minimal.zip`: For prebuilt image users (`.devcontainer/` with `devcontainer.json` and `docker-compose.yml`).
+- `latex-devcontainer-full.zip`: For local builds (`.devcontainer/` with `Dockerfile`, `config/`, `devcontainer.json`, and `docker-compose.yml` with commented-out `image`).
 
-# (temporary) Notes and thoughts
-* ultimately, I want to use DockerHub or another online registry to distribute my image
-* must force myself to reduce usage of RUN
-* include git into final container: according to https://code.visualstudio.com/remote/advancedcontainers/sharing-git-credentials, vscode dev containers shares the **host** ``.gitconfig`` into the containers. The documentation says "copies", but my testing showed, that it is actually shared. However, from inside the dev container, there is only read access to the **global** git configuration.  I have tested with the global ``.gitconfig`` and a local per-project override and it seemed to work.
-    ~~~cmd
-    git config --local user.name "Testing Tester"
-    ~~~
-    start dev container and enter bash:
-    ~~~bash
-    # test local configuration
-    git config --local --list --show-origin
-    # shows:
-    # ...
-    # file:.git/config        user.name=Testing Tester
-
-    # test global configuration
-    git config  --list --global --show-origin
-    # ...
-    # file:/root/.gitconfig   user.name=Marc Weber
-    # ...
-    ~~~
-    Reset the local change after testing from inside **or** outside container
-    ~~~bash
-    git config --local --unset user.name
-    ~~~
-    close the container and test the updated git config on **host**:
-    ~~~cmd
-    git config --local --list --show-origin
-    # does not show a line for user.name:
-    ~~~
-    I keep the mounting point in the docker-compose file as instructions on how to mount the global host .gitconfig from a custom location.
-
-
-# SSH agent
-## Install SSH agent on windows client
+## Troubleshooting
+### SSH Agent
+#### Install SSH agent on windows client
 ~~~powershell
-# as administrator
 # Make sure you're running as an Administrator
 Set-Service ssh-agent -StartupType Automatic
 Start-Service ssh-agent
 Get-Service ssh-agent
 ~~~
-## Configure SSH agent
+#### Configure SSH agent
 https://superuser.com/a/1631971/390394
+
+

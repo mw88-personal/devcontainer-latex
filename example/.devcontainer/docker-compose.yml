@@ -1,0 +1,16 @@
+version: "3.2"
+
+services:
+  vscode:
+    # Use the build: object, if you want to build the image from scratch. In this case, place the Dockerfile from the project root in the .devcontainer directory and comment out the image: object.
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
+    image: noctuidus/devcontainer-latex:0.9.3
+    environment:
+      - TZ=${TZ:-Europe/Berlin}
+      - SSH_AUTH_SOCK=/ssh-agent
+      - TERM=xterm
+    user: dev
+    entrypoint: ["/bin/bash", "-c", "while sleep 1000; do :; done"]
+
