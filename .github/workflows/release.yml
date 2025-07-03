@@ -1,4 +1,4 @@
-name: Create Release Zips
+name: Create Release and Push Image
 
 on:
   release:
@@ -7,12 +7,34 @@ on:
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       # Checkout repository
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Debug: List directory contents
+      # Set up Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Log in to Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # Build and push Docker image
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: noctuidus/devcontainer-latex:${{ github.event.release.tag_name }}
+
+      # Debug: List repository contents
       - name: List repository contents
         run: |
           ls -R
@@ -24,7 +46,7 @@ jobs:
           mkdir -p latex-devcontainer-minimal
           cp -r example/.devcontainer latex-devcontainer-minimal/
           # Update devcontainer.json to use prebuilt image
-          sed -i 's|"build": {[^}]*}|"image": "noctuidus/devcontainer-latex:latest"|' latex-devcontainer-minimal/.devcontainer/devcontainer.json
+          sed -i 's|"build": {[^}]*}|"image": "noctuidus/devcontainer-latex:${{ github.event.release.tag_name }}"|' latex-devcontainer-minimal/.devcontainer/devcontainer.json
           # Debug: Verify devcontainer.json
           cat latex-devcontainer-minimal/.devcontainer/devcontainer.json
           zip -r latex-devcontainer-minimal.zip latex-devcontainer-minimal
@@ -49,22 +71,16 @@ jobs:
 
       # Upload minimal release zip
       - name: Upload minimal release zip
-        uses: actions/upload-release-asset@v1
+        run: |
+          gh release upload ${{ github.event.release.tag_name }} latex-devcontainer-minimal.zip --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: latex-devcontainer-minimal.zip
-          asset_name: latex-devcontainer-minimal.zip
-          asset_content_type: application/zip
+        shell: bash
 
       # Upload full release zip
       - name: Upload full release zip
-        uses: actions/upload-release-asset@v1
+        run: |
+          gh release upload ${{ github.event.release.tag_name }} latex-devcontainer-release.zip --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: latex-devcontainer-release.zip
-          asset_name: latex-devcontainer-release.zip
-          asset_content_type: application/zip
+        shell: bash
