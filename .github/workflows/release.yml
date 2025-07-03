@@ -49,7 +49,7 @@ jobs:
 
       # Upload minimal release zip
       - name: Upload minimal release zip
-        uses: actions/upload-release-asset@v3
+        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -60,7 +60,7 @@ jobs:
 
       # Upload full release zip
       - name: Upload full release zip
-        uses: actions/upload-release-asset@v3
+        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
