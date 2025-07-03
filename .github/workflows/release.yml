@@ -50,7 +50,7 @@ jobs:
           # Debug: Verify devcontainer.json
           cat release/latex-devcontainer-minimal/.devcontainer/devcontainer.json
           cd release/latex-devcontainer-minimal
-          zip -r ../latex-devcontainer-minimal.zip
+          zip -r ../latex-devcontainer-minimal.zip *
           cd ..
         shell: bash
 
