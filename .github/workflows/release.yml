@@ -43,15 +43,13 @@ jobs:
       # Create minimal release zip
       - name: Create minimal release zip
         run: |
-          mkdir -p release/latex-devcontainer-minimal
-          cp -r example/.devcontainer release/latex-devcontainer-minimal/
+          mkdir -p latex-devcontainer-minimal-${{ github.event.release.tag_name }}
+          cp -r example/.devcontainer latex-devcontainer-minimal-${{ github.event.release.tag_name }}/
           # Update devcontainer.json to use prebuilt image
-          sed -i 's|"build": {[^}]*}|"image": "noctuidus/devcontainer-latex:${{ github.event.release.tag_name }}"|' release/latex-devcontainer-minimal/.devcontainer/devcontainer.json
+          sed -i 's|"build": {[^}]*}|"image": "noctuidus/devcontainer-latex:${{ github.event.release.tag_name }}"|' latex-devcontainer-minimal/.devcontainer/devcontainer.json
           # Debug: Verify devcontainer.json
-          cat release/latex-devcontainer-minimal/.devcontainer/devcontainer.json
-          cd release/latex-devcontainer-minimal
-          zip -r ../latex-devcontainer-minimal.zip *
-          cd ..
+          cat latex-devcontainer-minimal/.devcontainer/devcontainer.json
+          zip -r latex-devcontainer-minimal.zip latex-devcontainer-minimal-${{ github.event.release.tag_name }}
         shell: bash
 
       # Create full release zip
