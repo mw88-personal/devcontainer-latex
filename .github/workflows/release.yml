@@ -49,7 +49,7 @@ jobs:
           sed -i 's|"build": {[^}]*}|"image": "noctuidus/devcontainer-latex:${{ github.event.release.tag_name }}"|' latex-devcontainer-minimal/.devcontainer/devcontainer.json
           # Debug: Verify devcontainer.json
           cat latex-devcontainer-minimal/.devcontainer/devcontainer.json
-          zip -r latex-devcontainer-minimal.zip latex-devcontainer-minimal/*
+          cd latex-devcontainer-minimal && zip -r -j ../latex-devcontainer-minimal.zip * && cd ..
         shell: bash
 
       # Create full release zip
