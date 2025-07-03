@@ -46,7 +46,7 @@ jobs:
           mkdir -p latex-devcontainer-minimal-${{ github.event.release.tag_name }}
           cp -r example/.devcontainer latex-devcontainer-minimal-${{ github.event.release.tag_name }}/
           # Update devcontainer.json to use prebuilt image
-          sed -i 's|"build": {[^}]*}|"image": "noctuidus/devcontainer-latex:${{ github.event.release.tag_name }}"|' latex-devcontainer-minimal/.devcontainer/devcontainer.json
+          sed -i 's|"build": {[^}]*}|"image": "noctuidus/devcontainer-latex:${{ github.event.release.tag_name }}"|' latex-devcontainer-minimal-${{ github.event.release.tag_name }}/.devcontainer/devcontainer.json
           # Debug: Verify devcontainer.json
           cat latex-devcontainer-minimal/.devcontainer/devcontainer.json
           zip -r latex-devcontainer-minimal.zip latex-devcontainer-minimal-${{ github.event.release.tag_name }}
