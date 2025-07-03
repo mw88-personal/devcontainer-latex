@@ -35,8 +35,8 @@ FROM perl:${PERL_VERSION} AS texlive-builder
 WORKDIR /tmp/texlive
 ARG TEXLIVE_VERSION
 ARG TEXLIVE_MIRROR
-
 COPY config/texlive-profile.tlp tl.profile
+
 # Install Perl dependencies (cached layer)
 # the installation of cpan modules is separated, such that rebuilding time is lower: this part does not change as often, so it does not need to be rebuilt on every build
 RUN <<EOF
@@ -70,8 +70,8 @@ RUN <<EOF
     echo "TeX Live installation completed."
 
     # install additional latex packages
-    echo "Installing additional LaTeX packages (latexmk, latexindent)..."
-    tlmgr install latexmk latexindent
+    echo "Installing additional LaTeX packages (latexmk, latexindent, luaotfload, luatex)..."
+    tlmgr install latexmk latexindent luaotfload luatex
     echo "Additional packages installed."
     texhash
 
@@ -84,7 +84,6 @@ RUN <<EOF
     apt-get autoremove -y
     rm -rf /var/lib/apt/lists/* /tmp/*
 EOF
-COPY texmf-local /usr/local/texlive/texmf-local
 
 
 # Stage 3: Build Oh My Posh
@@ -101,7 +100,7 @@ RUN <<EOF
     apt-get autoremove -y
     rm -rf /var/lib/apt/lists/* /var/cache/*
 EOF
-COPY config/ohmyposh-theme.json /tmp/ohmyposh/theme.omp.json
+# COPY config/ohmyposh-theme.json /tmp/ohmyposh/theme.omp.json
 
 # Stage 4: Final image
 FROM debian:${DEBIAN_VERSION} AS main
@@ -116,7 +115,7 @@ COPY --from=chktex-builder /tmp/chktex /usr/local/bin/chktex
 COPY --from=ohmyposh-builder /usr/local/bin /usr/local/bin
 
 # Set TeX Live PATH
-ENV PATH="${PATH}:/usr/local/texlive/${TEXLIVE_VERSION}/bin/x86_64-linux:/usr/local/texlive/${TEXLIVE_VERSION}/bin/aarch64-linux"
+ENV PATH="/usr/local/texlive/${TEXLIVE_VERSION}/bin/x86_64-linux:/usr/local/texlive/${TEXLIVE_VERSION}/bin/aarch64-linux:${PATH}"
 
 # Install dependencies and configure environment
 RUN <<EOF
@@ -139,18 +138,22 @@ RUN <<EOF
     useradd --uid $USER_UID --gid $USER_GID -m  -s /bin/bash $USER_NAME || true
 
     # add user to sudoers for adminnistrative tasks
+    mkdir -p /etc/sudoers.d
     echo "$USER_NAME ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$USER_NAME
     chmod 0440 /etc/sudoers.d/$USER_NAME
     chown root:root /etc/sudoers.d/${USER_NAME}
 
-    mkdir -p "/home/${USER_NAME}/.ohmyposh" "/home/${USER_NAME}/.latexindent" "/home/${USER_NAME}/.ssh"
-    echo "Host *" >> /home/${USER_NAME}/.ssh/config
-    echo "  ForwardAgent yes" >> /home/${USER_NAME}/.ssh/config
-    echo "export TERM=xterm" >> /home/${USER_NAME}/.bashrc
-    chown -R $USER_UID:$USER_GID "/home/${USER_NAME}"
+    # mkdir -p "/home/${USER_NAME}/.ohmyposh" "/home/${USER_NAME}/.latexindent"
 
     # Configure Oh My Posh
-    printf "eval \"\$(oh-my-posh --init --shell bash --config /home/${USER_NAME}/.ohmyposh/theme.omp.json)\"\n" >> "/home/${USER_NAME}/.bashrc"
+    echo "export TERM=xterm" >> /home/${USER_NAME}/.bashrc
+    echo 'if [ -f /ws/.config/ohmyposh-theme.json ]; then' >> /home/${USER_NAME}/.bashrc
+    echo '    eval "$(oh-my-posh --init --shell bash --config /ws/.config/ohmyposh-theme.json)"' >> /home/${USER_NAME}/.bashrc
+    echo 'else' >> /home/${USER_NAME}/.bashrc
+    echo '    eval "$(oh-my-posh --init --shell bash)"' >> /home/${USER_NAME}/.bashrc
+    echo 'fi' >> /home/${USER_NAME}/.bashrc
+    chown -R $USER_UID:$USER_GID "/home/${USER_NAME}"
+
 
     # Set locale
     sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
@@ -167,11 +170,11 @@ EOF
 
 
 # Copy configuration files to non-root user's home
-COPY config/latexindent-config.yaml "/home/${USER_NAME}/.indentconfig.yaml"
-COPY config/latexindent-settings.yaml "/home/${USER_NAME}/.latexindent/defaultSettings.yaml"
-COPY config/chktex-config.rc "/home/${USER_NAME}/.chktexrc"
-COPY config/ohmyposh-theme.json "/home/${USER_NAME}/.ohmyposh/theme.omp.json"
+# COPY config/latexindent-config.yaml "/home/${USER_NAME}/.indentconfig.yaml"
+# COPY config/latexindent-settings.yaml "/home/${USER_NAME}/.latexindent/defaultSettings.yaml"
+COPY config/chktex-config-default.rc "/home/${USER_NAME}/.chktexrc"
 RUN chown -R $USER_UID:$USER_GID "/home/$USER_NAME"
+
 
 # Set default user and working directory
 USER "${USER_NAME}"

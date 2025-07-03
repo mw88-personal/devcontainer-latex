@@ -1,0 +1,5 @@
+# automatically convert line endings to LF by default
+* text=auto eol=lf
+# except for the following files
+*.{cmd,[cC][mM][dD]} text eol=crlf
+*.{bat,[bB][aA][tT]} text eol=crlf

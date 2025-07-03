@@ -3,28 +3,14 @@
     "dockerComposeFile": [
         "docker-compose.yml"
     ],
-    "service": "vscode",
-    "runServices": [
-        "vscode"
-    ],
-    "features": {
-        "ghcr.io/devcontainers/features/git:1": {}
-    },
+    "service": "debian-latex",
+    "remoteUser": "dev",
     "shutdownAction": "stopCompose",
-    "mounts": [
-        "source=${localWorkspaceFolder},target=/ws,type=bind",
-        "source=${env:SSH_AUTH_SOCK},target=/ssh-agent,type=bind,consistency=cached",
-        "source=${localEnv:USERPROFILE}/.gitconfig,target=/home/dev/.gitconfig,type=bind,consistency=cached"
-    ],
     "workspaceFolder": "/ws",
-    "postCreateCommand": "",
     "customizations": {
         "vscode": {
             "extensions": [
                 "james-yu.latex-workshop",
-                // Other
-                // "vscode-icons-team.vscode-icons" // keep icons from default profile
-                /* add toto comment highlighting */
                 "Gruntfuggly.todo-tree",
                 "ms-vscode-remote.remote-containers",
                 "redhat.vscode-yaml",
@@ -33,7 +19,13 @@
             ],
             "settings": {
                 // General settings
-                // "files.eol": "\n",
+                "files.eol": "\n",
+                "[bat]": {
+                    "files.eol": "\r\n"
+                },
+                "[python]": {
+                    "files.eol": "auto"
+                },
                 // Latex settings
                 // "latex-workshop.latex.clean.subfolder.enabled": true,
                 // "latex-workshop.latex.autoClean.run": "onBuilt",
@@ -64,8 +56,7 @@
                 },
                 "latex-workshop.formatting.latex": "latexindent",
                 "latex-workshop.formatting.latexindent.args": [
-                    "-c",
-                    "%DIR%/",
+                    "-l=%WORKSPACE_FOLDER%/.config/latexindent-config.yaml",
                     "%TMPFILE%"
                 ],
                 /* chktex settings */
@@ -73,6 +64,7 @@
                 "latex-workshop.linting.chktex.exec.path": "chktex",
                 "latex-workshop.linting.chktex.enabled": true, /* force document authors to adress all the small details aboput good latex code */
                 "latex-workshop.linting.chktex.exec.args": [
+                    "-f .config/chktex-config.rc",
                     "-wall", /* turn warning on for all messages */
                     "-n22", /* turn warning off for comment environments */
                     "-n30", /* turn warning off for multiple consecutive whitespaces */
@@ -100,8 +92,7 @@
                         ]
                     }
                 ]
-            },
-            "remoteUser": "dev"
+            }
         }
     }
 }
