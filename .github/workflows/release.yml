@@ -153,6 +153,9 @@ jobs:
 
           # Generate .devcontainer/README.md from template
           cp src/.devcontainer/README.tpl.md ${basepath}/.devcontainer/README.md
+          echo "# LaTeX Devcontainer (${{ github.event.release.tag_name }})" > ${basepath}/Preamble.md
+          echo "" >> ${basepath}/Preamble.md
+          echo "This is the example LaTeX devcontainer release, using a prebuilt image with demo files." >> ${basepath}/Preamble.md
           awk 'NR==FNR {p=p $0 "\n"; next} {sub(/{{ Preamble }}/, p)}1' ${basepath}/Preamble.md ${basepath}/.devcontainer/README.md > temp && mv temp ${basepath}/.devcontainer/README.md
           awk '/<!-- BEGIN USAGE -->/{p=1}/<!-- END USAGE -->/{p=0}p' README.md > ${basepath}/Usage.md
           awk 'NR==FNR {p=p $0 "\n"; next} {sub(/{{ USAGE }}/, p)}1' ${basepath}/Usage.md ${basepath}/.devcontainer/README.md > temp && mv temp ${basepath}/.devcontainer/README.md
@@ -185,9 +188,6 @@ jobs:
 
           # # Generate example/README.md from template
           # # cp example/README.tpl.md ${basepath}/example/README.md
-          # echo "# LaTeX Devcontainer (${{ github.event.release.tag_name }})" > ${basepath}/Preamble.md
-          # echo "" >> ${basepath}/Preamble.md
-          # echo "This is the example LaTeX devcontainer release, using a prebuilt image with demo files." >> ${basepath}/Preamble.md
 
           # awk 'NR==FNR {p=p $0 "\n"; next} {sub(/{{ Preamble }}/, p)}1' ${basepath}/Preamble.md ${basepath}/example/README.md > temp && mv temp ${basepath}/example/README.md
 
