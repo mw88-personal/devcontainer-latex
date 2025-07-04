@@ -1,3 +1,5 @@
+# Release: {{TAG}}
+
 # This setup makes the following assumptions:
 #  1. Source code resides in $source_dir
 #  2. All artifacts are placed inside $aux_dir

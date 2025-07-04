@@ -4,7 +4,7 @@ services:
     # build:
     #   context: .
     #   dockerfile: Dockerfile
-    image: noctuidus/devcontainer-latex:0.9.3
+    image: noctuidus/devcontainer-latex:{{TAG}}
     volumes:
       - type: bind
         source: "${PWD}"

@@ -34,56 +34,95 @@ jobs:
       #     push: true
       #     tags: noctuidus/devcontainer-latex:${{ github.event.release.tag_name }}
 
-      # # Debug: List repository contents
-      # - name: List repository contents
-      #   run: |
-      #     ls -R
-      #   shell: bash
-
-      # Create minimal release zip
-      - name: Create minimal release zip
+      # Debug: List repository contents
+      - name: List repository contents
         run: |
-          mkdir -p latex-devcontainer-minimal-${{ github.event.release.tag_name }}
-          cp -r example/.devcontainer latex-devcontainer-minimal-${{ github.event.release.tag_name }}/
-          cp -r example/.config latex-devcontainer-minimal-${{ github.event.release.tag_name }}/
-          cp -r example/.gitattributes latex-devcontainer-minimal-${{ github.event.release.tag_name }}/
-          cp -r example/.gitignore latex-devcontainer-minimal-${{ github.event.release.tag_name }}/
-          cp -r README.md latex-devcontainer-minimal-${{ github.event.release.tag_name }}/
-          # Update devcontainer.json to use prebuilt image
-          sed -i 's|"build": {[^}]*}|"image": "noctuidus/devcontainer-latex:${{ github.event.release.tag_name }}"|' latex-devcontainer-minimal-${{ github.event.release.tag_name }}/.devcontainer/devcontainer.json
-          # zip all contents into release
-          zip -r latex-devcontainer-minimal.zip latex-devcontainer-minimal-${{ github.event.release.tag_name }}
+          ls -R
+        shell: bash
+
+      # Create core release zip
+      - name: Create core release zip
+        run: |
+          basepath=latex-devcontainer-core-${{ github.event.release.tag_name }}
+
+          mkdir -p ${basepath}/.devcontainer
+          cp -r src/.devcontainer/* ${basepath}/.devcontainer/
+          cp src/.gitattributes ${basepath}/
+          cp src/.gitignore ${basepath}/
+
+          # Generate README.md from template
+          cp src/.devcontainer/README.tpl.md ${basepath}/README-devcontainer.md
+          echo "# LaTeX Devcontainer (${{ github.event.release.tag_name }})" > ${basepath}/Preamble.md
+          echo "" >> ${basepath}/Preamble.md
+          echo "This is the core LaTeX devcontainer release, using a prebuilt Docker image." >> ${basepath}/Preamble.md
+          sed -i "s|{{ Preamble }}|$(cat ${basepath}/Preamble.md)|" ${basepath}/.devcontainer/README.md
+          awk '/<!-- BEGIN USAGE -->/{p=1}/<!-- END USAGE -->/{p=0}p' README.md > ${basepath}/Usage.md
+          sed -i "s|{{ USAGE }}|$(cat ${basepath}/Usage.md)|" ${basepath}/.devcontainer/README.md
+          awk '/<!-- BEGIN CONFIG -->/{p=1}/<!-- END CONFIG -->/{p=0}p' README.md > ${basepath}/Config.md
+          sed -i "s|{{ CONFIG }}|$(cat ${basepath}/Config.md)|" ${basepath}/.devcontainer/README.md
+          awk '/<!-- BEGIN DEBUG -->/{p=1}/<!-- END DEBUG -->/{p=0}p' README.md > ${basepath}/Debug.md
+          sed -i "s|{{ DEBUG }}|$(cat ${basepath}/Debug.md)|" ${basepath}/.devcontainer/README.md
+
+
+          # Add release tag comments
+          for file in ${basepath}/.devcontainer/*.json; do
+            echo "// Release: ${{ github.event.release.tag_name }}" | cat - "$file" > temp && mv temp "$file"
+          done
+          for file in ${basepath}/.devcontainer/*.yml; do
+            echo "# Release: ${{ github.event.release.tag_name }}" | cat - "$file" > temp && mv temp "$file"
+          done
+
+
+          # Replace placeholders
+          find ${basepath} -type f -name "*.md" -exec sed -i "s/{{TAG}}/${{ github.event.release.tag_name }}/g" {} \;
+          sed -i "s|image: noctuidus/devcontainer-latex:{{TAG}}|image: noctuidus/devcontainer-latex:${{ github.event.release.tag_name }}|" ${basepath}/.devcontainer/docker-compose.yml
+
+
+          # Create top-level README.md
+          echo "# LaTeX Devcontainer (${{ github.event.release.tag_name }})" > ${basepath}/README.md
+          echo "" >> ${basepath}/README.md
+          echo "This is the core LaTeX devcontainer release, using a prebuilt Docker image." >> ${basepath}/README.md
+          echo "" >> ${basepath}/README.md
+          cat ${basepath}/Usage.md >> ${basepath}/README.md
+          cat ${basepath}/Config.md >> ${basepath}/README.md
+          rm ${basepath}/Preamble.md ${basepath}/Usage.md ${basepath}/Config.md ${basepath}/Debug.md
+
+
+          # Debug: Verify files
+          cat ${basepath}/.devcontainer/devcontainer.json
+          cat ${basepath}/.devcontainer/docker-compose.yml
+          zip -r latex-devcontainer-core-${{ github.event.release.tag_name }}.zip ${basepath}
         shell: bash
 
       # Create full release zip
-      - name: Create full release zip
-        run: |
-          mkdir -p latex-devcontainer-release/.devcontainer
-          cp -r example/.devcontainer/* latex-devcontainer-release/.devcontainer/
-          cp Dockerfile latex-devcontainer-release/.devcontainer/
-          cp -r config latex-devcontainer-release/.devcontainer/
-          # Update devcontainer.json to use local Dockerfile
-          sed -i 's|"build": {[^}]*}|"build": {"dockerfile": "Dockerfile", "context": "."}|' latex-devcontainer-release/.devcontainer/devcontainer.json
-          # Comment out image field in docker-compose.yml
-          sed -i 's|^\(\s*image:.*\)$|#\1|' latex-devcontainer-release/.devcontainer/docker-compose.yml
-          # Debug: Verify modified files
-          cat latex-devcontainer-release/.devcontainer/devcontainer.json
-          cat latex-devcontainer-release/.devcontainer/docker-compose.yml
-          zip -r latex-devcontainer-release.zip latex-devcontainer-release
-        shell: bash
+      # - name: Create full release zip
+      #   run: |
+      #     mkdir -p latex-devcontainer-release/.devcontainer
+      #     cp -r example/.devcontainer/* latex-devcontainer-release/.devcontainer/
+      #     cp Dockerfile latex-devcontainer-release/.devcontainer/
+      #     cp -r config latex-devcontainer-release/.devcontainer/
+      #     # Update devcontainer.json to use local Dockerfile
+      #     sed -i 's|"build": {[^}]*}|"build": {"dockerfile": "Dockerfile", "context": "."}|' latex-devcontainer-release/.devcontainer/devcontainer.json
+      #     # Comment out image field in docker-compose.yml
+      #     sed -i 's|^\(\s*image:.*\)$|#\1|' latex-devcontainer-release/.devcontainer/docker-compose.yml
+      #     # Debug: Verify modified files
+      #     cat latex-devcontainer-release/.devcontainer/devcontainer.json
+      #     cat latex-devcontainer-release/.devcontainer/docker-compose.yml
+      #     zip -r latex-devcontainer-release.zip latex-devcontainer-release
+      #   shell: bash
 
       # Upload minimal release zip
-      - name: Upload minimal release zip
+      - name: Upload core release zip
         run: |
-          gh release upload ${{ github.event.release.tag_name }} latex-devcontainer-minimal.zip --clobber
+          gh release upload ${{ github.event.release.tag_name }} latex-devcontainer-core-${{ github.event.release.tag_name }}.zip --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
 
       # Upload full release zip
-      - name: Upload full release zip
-        run: |
-          gh release upload ${{ github.event.release.tag_name }} latex-devcontainer-release.zip --clobber
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash
+      # - name: Upload full release zip
+      #   run: |
+      #     gh release upload ${{ github.event.release.tag_name }} latex-devcontainer-release.zip --clobber
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   shell: bash
