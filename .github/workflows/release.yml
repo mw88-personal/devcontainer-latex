@@ -149,6 +149,8 @@ jobs:
           cp -r src/config/{chktex-config.rc,latexindent-config.yaml,ohmyposh-theme.json} ${basepath}/.config/
           cp -r example/{example.tex,latexmkrc} ${basepath}/
 
+
+
           # Generate .devcontainer/README.md from template
           cp src/.devcontainer/README.tpl.md ${basepath}/.devcontainer/README.md
           awk 'NR==FNR {p=p $0 "\n"; next} {sub(/{{ Preamble }}/, p)}1' ${basepath}/Preamble.md ${basepath}/.devcontainer/README.md > temp && mv temp ${basepath}/.devcontainer/README.md
@@ -171,6 +173,7 @@ jobs:
           sed -i "s|image: noctuidus/devcontainer-latex:{{TAG}}|image: noctuidus/devcontainer-latex:${{ github.event.release.tag_name }}|" ${basepath}/.devcontainer/docker-compose.yml
 
           # Create top-level README.md
+          awk '/<!-- BEGIN EXAMPLE -->/{p=1}/<!-- END EXAMPLE -->/{p=0}p' README.md > ${basepath}/Example.md
           echo "# LaTeX Devcontainer (${{ github.event.release.tag_name }})" > ${basepath}/README-devcontainer.md
           echo "" >> ${basepath}/README-devcontainer.md
           echo "This is the example LaTeX devcontainer release, using a prebuilt image with demo files." >> ${basepath}/README-devcontainer.md
@@ -178,7 +181,23 @@ jobs:
           cat ${basepath}/Usage.md >> ${basepath}/README-devcontainer.md
           echo "" >> ${basepath}/README-devcontainer.md
           cat ${basepath}/Example.md >> ${basepath}/README-devcontainer.md
+
+
+          # # Generate example/README.md from template
+          # # cp example/README.tpl.md ${basepath}/example/README.md
+          # echo "# LaTeX Devcontainer (${{ github.event.release.tag_name }})" > ${basepath}/Preamble.md
+          # echo "" >> ${basepath}/Preamble.md
+          # echo "This is the example LaTeX devcontainer release, using a prebuilt image with demo files." >> ${basepath}/Preamble.md
+
+          # awk 'NR==FNR {p=p $0 "\n"; next} {sub(/{{ Preamble }}/, p)}1' ${basepath}/Preamble.md ${basepath}/example/README.md > temp && mv temp ${basepath}/example/README.md
+
+
+          # awk 'NR==FNR {p=p $0 "\n"; next} {sub(/{{ EXAMPLE }}/, p)}1' ${basepath}/Example.md ${basepath}/example/README.md > temp && mv temp ${basepath}/example/README.md
+
+
+
           rm ${basepath}/Preamble.md ${basepath}/Usage.md ${basepath}/Config.md ${basepath}/Debug.md ${basepath}/Example.md
+
           zip -r latex-devcontainer-example.zip ${basepath}
         shell: bash
 
