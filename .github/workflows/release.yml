@@ -30,7 +30,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: src
-          file: Dockerfile
+          file: src/Dockerfile
           push: true
           tags: noctuidus/devcontainer-latex:${{ github.event.release.tag_name }}
 
