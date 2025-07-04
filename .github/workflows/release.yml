@@ -45,7 +45,7 @@ jobs:
         run: |
           basepath=latex-devcontainer-core-${{ github.event.release.tag_name }}
           mkdir -p ${basepath}/{.devcontainer,.vscode,.config}
-          cp -r src/.devcontainer/* ${basepath}/.devcontainer/
+          cp -r src/.devcontainer/{docker-compose.yml,devcontainer.json} ${basepath}/.devcontainer/
           cp src/.gitattributes ${basepath}/
           cp src/.gitignore ${basepath}/
 
