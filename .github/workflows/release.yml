@@ -44,26 +44,22 @@ jobs:
       - name: Create core release zip
         run: |
           basepath=latex-devcontainer-core-${{ github.event.release.tag_name }}
-
           mkdir -p ${basepath}/.devcontainer
           cp -r src/.devcontainer/* ${basepath}/.devcontainer/
-          cp src/.gitattributes ${basepath}/
-          cp src/.gitignore ${basepath}/
-
+          cp src/.gitattributes ${basepath}/.devcontainer/
+          cp src/.gitignore ${basepath}/.devcontainer/
           # Generate README.md from template
-          cp src/.devcontainer/README.tpl.md ${basepath}/README-devcontainer.md
+          cp src/.devcontainer/README.tpl.md ${basepath}/.devcontainer/README.md
           echo "# LaTeX Devcontainer (${{ github.event.release.tag_name }})" > ${basepath}/Preamble.md
           echo "" >> ${basepath}/Preamble.md
           echo "This is the core LaTeX devcontainer release, using a prebuilt Docker image." >> ${basepath}/Preamble.md
-          sed -i "s|{{ Preamble }}|$(cat ${basepath}/Preamble.md)|" ${basepath}/.devcontainer/README.md
+          awk 'NR==FNR {p=p $0 "\n"; next} {sub(/{{ Preamble }}/, p)}1' ${basepath}/Preamble.md ${basepath}/.devcontainer/README.md > temp && mv temp ${basepath}/.devcontainer/README.md
           awk '/<!-- BEGIN USAGE -->/{p=1}/<!-- END USAGE -->/{p=0}p' README.md > ${basepath}/Usage.md
-          sed -i "s|{{ USAGE }}|$(cat ${basepath}/Usage.md)|" ${basepath}/.devcontainer/README.md
+          awk 'NR==FNR {p=p $0 "\n"; next} {sub(/{{ USAGE }}/, p)}1' ${basepath}/Usage.md ${basepath}/.devcontainer/README.md > temp && mv temp ${basepath}/.devcontainer/README.md
           awk '/<!-- BEGIN CONFIG -->/{p=1}/<!-- END CONFIG -->/{p=0}p' README.md > ${basepath}/Config.md
-          sed -i "s|{{ CONFIG }}|$(cat ${basepath}/Config.md)|" ${basepath}/.devcontainer/README.md
+          awk 'NR==FNR {p=p $0 "\n"; next} {sub(/{{ CONFIG }}/, p)}1' ${basepath}/Config.md ${basepath}/.devcontainer/README.md > temp && mv temp ${basepath}/.devcontainer/README.md
           awk '/<!-- BEGIN DEBUG -->/{p=1}/<!-- END DEBUG -->/{p=0}p' README.md > ${basepath}/Debug.md
-          sed -i "s|{{ DEBUG }}|$(cat ${basepath}/Debug.md)|" ${basepath}/.devcontainer/README.md
-
-
+          awk 'NR==FNR {p=p $0 "\n"; next} {sub(/{{ DEBUG }}/, p)}1' ${basepath}/Debug.md ${basepath}/.devcontainer/README.md > temp && mv temp ${basepath}/.devcontainer/README.md
           # Add release tag comments
           for file in ${basepath}/.devcontainer/*.json; do
             echo "// Release: ${{ github.event.release.tag_name }}" | cat - "$file" > temp && mv temp "$file"
@@ -71,13 +67,9 @@ jobs:
           for file in ${basepath}/.devcontainer/*.yml; do
             echo "# Release: ${{ github.event.release.tag_name }}" | cat - "$file" > temp && mv temp "$file"
           done
-
-
-          # Replace placeholders
+          # Replace {{TAG}} in Markdown and docker-compose.yml
           find ${basepath} -type f -name "*.md" -exec sed -i "s/{{TAG}}/${{ github.event.release.tag_name }}/g" {} \;
           sed -i "s|image: noctuidus/devcontainer-latex:{{TAG}}|image: noctuidus/devcontainer-latex:${{ github.event.release.tag_name }}|" ${basepath}/.devcontainer/docker-compose.yml
-
-
           # Create top-level README.md
           echo "# LaTeX Devcontainer (${{ github.event.release.tag_name }})" > ${basepath}/README.md
           echo "" >> ${basepath}/README.md
@@ -86,11 +78,10 @@ jobs:
           cat ${basepath}/Usage.md >> ${basepath}/README.md
           cat ${basepath}/Config.md >> ${basepath}/README.md
           rm ${basepath}/Preamble.md ${basepath}/Usage.md ${basepath}/Config.md ${basepath}/Debug.md
-
-
           # Debug: Verify files
           cat ${basepath}/.devcontainer/devcontainer.json
           cat ${basepath}/.devcontainer/docker-compose.yml
+          cat ${basepath}/.devcontainer/README.md
           zip -r latex-devcontainer-core-${{ github.event.release.tag_name }}.zip ${basepath}
         shell: bash
 
