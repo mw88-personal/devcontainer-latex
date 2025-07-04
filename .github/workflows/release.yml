@@ -74,50 +74,138 @@ jobs:
           # Replace {{TAG}} in Markdown and docker-compose.yml
           find ${basepath} -type f -name "*.md" -exec sed -i "s/{{TAG}}/${{ github.event.release.tag_name }}/g" {} \;
           sed -i "s|image: noctuidus/devcontainer-latex:{{TAG}}|image: noctuidus/devcontainer-latex:${{ github.event.release.tag_name }}|" ${basepath}/.devcontainer/docker-compose.yml
+
           # Create top-level README.md
-          echo "# LaTeX Devcontainer (${{ github.event.release.tag_name }})" > ${basepath}/README.md
-          echo "" >> ${basepath}/README.md
-          echo "This is the core LaTeX devcontainer release, using a prebuilt Docker image." >> ${basepath}/README.md
-          echo "" >> ${basepath}/README.md
-          cat ${basepath}/Usage.md >> ${basepath}/README.md
-          cat ${basepath}/Config.md >> ${basepath}/README.md
+          echo "# LaTeX Devcontainer (${{ github.event.release.tag_name }})" > ${basepath}/README-devcontainer.md
+          echo "" >> ${basepath}/README-devcontainer.md
+          echo "This is the core LaTeX devcontainer release, using a prebuilt Docker image." >> ${basepath}/README-devcontainer.md
+          echo "" >> ${basepath}/README-devcontainer.md
+          cat ${basepath}/Usage.md >> ${basepath}/README-devcontainer.md
+          cat ${basepath}/Config.md >> ${basepath}/README-devcontainer.md
           rm ${basepath}/Preamble.md ${basepath}/Usage.md ${basepath}/Config.md ${basepath}/Debug.md
-          # Debug: Verify files
-          cat ${basepath}/.devcontainer/devcontainer.json
-          cat ${basepath}/.devcontainer/docker-compose.yml
-          cat ${basepath}/.devcontainer/README.md
-          zip -r latex-devcontainer-core-${{ github.event.release.tag_name }}.zip ${basepath}
+          zip -r latex-devcontainer-core.zip ${basepath}
         shell: bash
 
-      # Create full release zip
-      # - name: Create full release zip
-      #   run: |
-      #     mkdir -p latex-devcontainer-release/.devcontainer
-      #     cp -r example/.devcontainer/* latex-devcontainer-release/.devcontainer/
-      #     cp Dockerfile latex-devcontainer-release/.devcontainer/
-      #     cp -r config latex-devcontainer-release/.devcontainer/
-      #     # Update devcontainer.json to use local Dockerfile
-      #     sed -i 's|"build": {[^}]*}|"build": {"dockerfile": "Dockerfile", "context": "."}|' latex-devcontainer-release/.devcontainer/devcontainer.json
-      #     # Comment out image field in docker-compose.yml
-      #     sed -i 's|^\(\s*image:.*\)$|#\1|' latex-devcontainer-release/.devcontainer/docker-compose.yml
-      #     # Debug: Verify modified files
-      #     cat latex-devcontainer-release/.devcontainer/devcontainer.json
-      #     cat latex-devcontainer-release/.devcontainer/docker-compose.yml
-      #     zip -r latex-devcontainer-release.zip latex-devcontainer-release
-      #   shell: bash
+      # Create source release zip
+      - name: Create source release zip
+        run: |
+          basepath=latex-devcontainer-source-${{ github.event.release.tag_name }}
+          mkdir -p ${basepath}/{.devcontainer,.vscode,.config}
+          cp -r src/.devcontainer/{docker-compose.yml,devcontainer.json} ${basepath}/.devcontainer/
+          cp src/.gitattributes ${basepath}/
+          cp src/.gitignore ${basepath}/
+          cp -r src/.vscode ${basepath}/
+          cp -r src/config/{chktex-config.rc,chktex-config-default.rc,latexindent-config.yaml,ohmyposh-theme.json,texlive-profile.tlp} ${basepath}/.config/
+          cp src/Dockerfile ${basepath}/
+          # Generate README.md from template
+          cp src/.devcontainer/README.tpl.md ${basepath}/.devcontainer/README.md
+          echo "# LaTeX Devcontainer (${{ github.event.release.tag_name }})" > ${basepath}/Preamble.md
+          echo "" >> ${basepath}/Preamble.md
+          echo "This is the source LaTeX devcontainer release, for local building without demo files." >> ${basepath}/Preamble.md
+          awk 'NR==FNR {p=p $0 "\n"; next} {sub(/{{ Preamble }}/, p)}1' ${basepath}/Preamble.md ${basepath}/.devcontainer/README.md > temp && mv temp ${basepath}/.devcontainer/README.md
+          awk '/<!-- BEGIN USAGE -->/{p=1}/<!-- END USAGE -->/{p=0}p' README.md > ${basepath}/Usage.md
+          awk 'NR==FNR {p=p $0 "\n"; next} {sub(/{{ USAGE }}/, p)}1' ${basepath}/Usage.md ${basepath}/.devcontainer/README.md > temp && mv temp ${basepath}/.devcontainer/README.md
+          awk '/<!-- BEGIN CONFIG -->/{p=1}/<!-- END CONFIG -->/{p=0}p' README.md > ${basepath}/Config.md
+          awk 'NR==FNR {p=p $0 "\n"; next} {sub(/{{ CONFIG }}/, p)}1' ${basepath}/Config.md ${basepath}/.devcontainer/README.md > temp && mv temp ${basepath}/.devcontainer/README.md
+          awk '/<!-- BEGIN DEBUG -->/{p=1}/<!-- END DEBUG -->/{p=0}p' README.md > ${basepath}/Debug.md
+          awk 'NR==FNR {p=p $0 "\n"; next} {sub(/{{ DEBUG }}/, p)}1' ${basepath}/Debug.md ${basepath}/.devcontainer/README.md > temp && mv temp ${basepath}/.devcontainer/README.md
+          # Add release tag comments
+          for file in ${basepath}/.devcontainer/*.json ${basepath}/.config/*.json; do
+            echo "// Release: ${{ github.event.release.tag_name }}" | cat - "$file" > temp && mv temp "$file"
+          done
+          for file in ${basepath}/.devcontainer/*.{yml,yaml} ${basepath}/.config/*.{yml,yaml}; do
+            echo "# Release: ${{ github.event.release.tag_name }}" | cat - "$file" > temp && mv temp "$file"
+          done
+          for file in ${basepath}/.config/*.{rc,tlp}; do
+            echo "# Release: ${{ github.event.release.tag_name }}" | cat - "$file" > temp && mv temp "$file"
+          done
+          # Replace {{TAG}} in Markdown and docker-compose.yml
+          find ${basepath} -type f -name "*.md" -exec sed -i "s/{{TAG}}/${{ github.event.release.tag_name }}/g" {} \;
+          sed -i "s|image: noctuidus/devcontainer-latex:{{TAG}}|image: noctuidus/devcontainer-latex:${{ github.event.release.tag_name }}|" ${basepath}/.devcontainer/docker-compose.yml
+          sed -i 's|^#\(build:\s*\n\s*context:[^\n]*\n\s*dockerfile:[^\n]*\)|build:\n    context: .\n    dockerfile: Dockerfile|' ${basepath}/.devcontainer/docker-compose.yml
+          sed -i 's|^\(\s*image:.*\)$|#\1|' ${basepath}/.devcontainer/docker-compose.yml
+          sed -i '/volumes:/a \      - ./texmf:/usr/local/texlive/texmf-local' ${basepath}/.devcontainer/docker-compose.yml
+          # Create top-level README.md
+          echo "# LaTeX Devcontainer (${{ github.event.release.tag_name }})" > ${basepath}/README-devcontainer.md
+          echo "" >> ${basepath}/README-devcontainer.md
+          echo "This is the source LaTeX devcontainer release, for local building without demo files." >> ${basepath}/README-devcontainer.md
+          echo "" >> ${basepath}/README-devcontainer.md
+          cat ${basepath}/Usage.md >> ${basepath}/README-devcontainer.md
+          cat ${basepath}/Config.md >> ${basepath}/README-devcontainer.md
+          rm ${basepath}/Preamble.md ${basepath}/Usage.md ${basepath}/Config.md ${basepath}/Debug.md
+          zip -r latex-devcontainer-source.zip ${basepath}
+        shell: bash
 
-      # Upload minimal release zip
+      # Create example release zip
+      - name: Create example release zip
+        run: |
+          basepath=latex-devcontainer-example-${{ github.event.release.tag_name }}
+          mkdir -p ${basepath}/{.devcontainer,.vscode,.config,example}
+          cp -r src/.devcontainer/{docker-compose.yml,devcontainer.json} ${basepath}/.devcontainer/
+          cp src/.gitattributes ${basepath}/
+          cp src/.gitignore ${basepath}/
+          cp -r src/.vscode ${basepath}/
+          cp -r src/config/{chktex-config.rc,latexindent-config.yaml,ohmyposh-theme.json} ${basepath}/.config/
+          cp -r example/{example.tex,latexmkrc,README.tpl.md} ${basepath}/example/
+          # Generate example/README.md from template
+          cp example/README.tpl.md ${basepath}/example/README.md
+          echo "# LaTeX Devcontainer (${{ github.event.release.tag_name }})" > ${basepath}/Preamble.md
+          echo "" >> ${basepath}/Preamble.md
+          echo "This is the example LaTeX devcontainer release, using a prebuilt image with demo files." >> ${basepath}/Preamble.md
+          awk 'NR==FNR {p=p $0 "\n"; next} {sub(/{{ Preamble }}/, p)}1' ${basepath}/Preamble.md ${basepath}/example/README.md > temp && mv temp ${basepath}/example/README.md
+          awk '/<!-- BEGIN EXAMPLE -->/{p=1}/<!-- END EXAMPLE -->/{p=0}p' README.md > ${basepath}/Example.md
+          awk 'NR==FNR {p=p $0 "\n"; next} {sub(/{{ EXAMPLE }}/, p)}1' ${basepath}/Example.md ${basepath}/example/README.md > temp && mv temp ${basepath}/example/README.md
+          # Generate .devcontainer/README.md from template
+          cp src/.devcontainer/README.tpl.md ${basepath}/.devcontainer/README.md
+          awk 'NR==FNR {p=p $0 "\n"; next} {sub(/{{ Preamble }}/, p)}1' ${basepath}/Preamble.md ${basepath}/.devcontainer/README.md > temp && mv temp ${basepath}/.devcontainer/README.md
+          awk '/<!-- BEGIN USAGE -->/{p=1}/<!-- END USAGE -->/{p=0}p' README.md > ${basepath}/Usage.md
+          awk 'NR==FNR {p=p $0 "\n"; next} {sub(/{{ USAGE }}/, p)}1' ${basepath}/Usage.md ${basepath}/.devcontainer/README.md > temp && mv temp ${basepath}/.devcontainer/README.md
+          awk '/<!-- BEGIN CONFIG -->/{p=1}/<!-- END CONFIG -->/{p=0}p' README.md > ${basepath}/Config.md
+          awk 'NR==FNR {p=p $0 "\n"; next} {sub(/{{ CONFIG }}/, p)}1' ${basepath}/Config.md ${basepath}/.devcontainer/README.md > temp && mv temp ${basepath}/.devcontainer/README.md
+          awk '/<!-- BEGIN DEBUG -->/{p=1}/<!-- END DEBUG -->/{p=0}p' README.md > ${basepath}/Debug.md
+          awk 'NR==FNR {p=p $0 "\n"; next} {sub(/{{ DEBUG }}/, p)}1' ${basepath}/Debug.md ${basepath}/.devcontainer/README.md > temp && mv temp ${basepath}/.devcontainer/README.md
+          # Add release tag comments
+          for file in ${basepath}/.devcontainer/*.json; do
+            echo "// Release: ${{ github.event.release.tag_name }}" | cat - "$file" > temp && mv temp "$file"
+          done
+          for file in ${basepath}/.devcontainer/*.{yml,yaml} ${basepath}/example/*.rc; do
+            echo "# Release: ${{ github.event.release.tag_name }}" | cat - "$file" > temp && mv temp "$file"
+          done
+          # Replace {{TAG}} in Markdown and docker-compose.yml
+          find ${basepath} -type f -name "*.md" -exec sed -i "s/{{TAG}}/${{ github.event.release.tag_name }}/g" {} \;
+          sed -i "s|image: noctuidus/devcontainer-latex:{{TAG}}|image: noctuidus/devcontainer-latex:${{ github.event.release.tag_name }}|" ${basepath}/.devcontainer/docker-compose.yml
+          # Create top-level README.md
+          echo "# LaTeX Devcontainer (${{ github.event.release.tag_name }})" > ${basepath}/README-devcontainer.md
+          echo "" >> ${basepath}/README-devcontainer.md
+          echo "This is the example LaTeX devcontainer release, using a prebuilt image with demo files." >> ${basepath}/README-devcontainer.md
+          echo "" >> ${basepath}/README-devcontainer.md
+          cat ${basepath}/Usage.md >> ${basepath}/README-devcontainer.md
+          echo "" >> ${basepath}/README-devcontainer.md
+          cat ${basepath}/Example.md >> ${basepath}/README-devcontainer.md
+          rm ${basepath}/Preamble.md ${basepath}/Usage.md ${basepath}/Config.md ${basepath}/Debug.md ${basepath}/Example.md
+          zip -r latex-devcontainer-example.zip ${basepath}
+        shell: bash
+
+      # Upload core release zip
       - name: Upload core release zip
         run: |
-          gh release upload ${{ github.event.release.tag_name }} latex-devcontainer-core-${{ github.event.release.tag_name }}.zip --clobber
+          gh release upload ${{ github.event.release.tag_name }} latex-devcontainer-core.zip --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
 
-      # Upload full release zip
-      # - name: Upload full release zip
-      #   run: |
-      #     gh release upload ${{ github.event.release.tag_name }} latex-devcontainer-release.zip --clobber
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   shell: bash
+      # Upload source release zip
+      - name: Upload source release zip
+        run: |
+          gh release upload ${{ github.event.release.tag_name }} latex-devcontainer-source.zip --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+
+      # Upload example release zip
+      - name: Upload example release zip
+        run: |
+          gh release upload ${{ github.event.release.tag_name }} latex-devcontainer-example.zip --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
