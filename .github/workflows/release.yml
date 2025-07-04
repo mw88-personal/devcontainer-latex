@@ -44,12 +44,12 @@ jobs:
       - name: Create core release zip
         run: |
           basepath=latex-devcontainer-core-${{ github.event.release.tag_name }}
-          mkdir -p ${basepath}/.devcontainer
+          mkdir -p ${basepath}/{.devcontainer,.vscode,.config}
           cp -r src/.devcontainer/* ${basepath}/.devcontainer/
           cp src/.gitattributes ${basepath}/
           cp src/.gitignore ${basepath}/
 
-          cp -r src/.vscode/* ${basepath}/.vscode/
+          cp -r src/.vscode ${basepath}/
           cp -r src/config/{chktex-config.rc,latexindent-config.yaml,ohmyposh-theme.json} ${basepath}/.config/
 
           # Generate README.md from template
