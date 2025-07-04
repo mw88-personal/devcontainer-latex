@@ -46,8 +46,12 @@ jobs:
           basepath=latex-devcontainer-core-${{ github.event.release.tag_name }}
           mkdir -p ${basepath}/.devcontainer
           cp -r src/.devcontainer/* ${basepath}/.devcontainer/
-          cp src/.gitattributes ${basepath}/.devcontainer/
-          cp src/.gitignore ${basepath}/.devcontainer/
+          cp src/.gitattributes ${basepath}/
+          cp src/.gitignore ${basepath}/
+
+          cp -r src/.vscode/* ${basepath}/.vscode/
+          cp -r src/config/{chktex-config.rc,latexindent-config.yaml,ohmyposh-theme.json} ${basepath}/.config/
+
           # Generate README.md from template
           cp src/.devcontainer/README.tpl.md ${basepath}/.devcontainer/README.md
           echo "# LaTeX Devcontainer (${{ github.event.release.tag_name }})" > ${basepath}/Preamble.md
@@ -64,7 +68,7 @@ jobs:
           for file in ${basepath}/.devcontainer/*.json; do
             echo "// Release: ${{ github.event.release.tag_name }}" | cat - "$file" > temp && mv temp "$file"
           done
-          for file in ${basepath}/.devcontainer/*.yml; do
+          for file in ${basepath}/.devcontainer/*.{yml,yaml}; do
             echo "# Release: ${{ github.event.release.tag_name }}" | cat - "$file" > temp && mv temp "$file"
           done
           # Replace {{TAG}} in Markdown and docker-compose.yml
