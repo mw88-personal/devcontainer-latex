@@ -96,7 +96,8 @@ jobs:
           cp src/.gitignore ${basepath}/
           cp -r src/.vscode ${basepath}/
           cp -r src/config/{chktex-config.rc,chktex-config-default.rc,latexindent-config.yaml,ohmyposh-theme.json,texlive-profile.tlp} ${basepath}/.config/
-          cp src/Dockerfile ${basepath}/
+          cp src/Dockerfile ${basepath}/.devcontainer/
+
           # Generate README.md from template
           cp src/.devcontainer/README.tpl.md ${basepath}/.devcontainer/README.md
           echo "# LaTeX Devcontainer (${{ github.event.release.tag_name }})" > ${basepath}/Preamble.md
@@ -140,21 +141,14 @@ jobs:
       - name: Create example release zip
         run: |
           basepath=latex-devcontainer-example-${{ github.event.release.tag_name }}
-          mkdir -p ${basepath}/{.devcontainer,.vscode,.config,example}
+          mkdir -p ${basepath}/{.devcontainer,.vscode,.config}
           cp -r src/.devcontainer/{docker-compose.yml,devcontainer.json} ${basepath}/.devcontainer/
           cp src/.gitattributes ${basepath}/
           cp src/.gitignore ${basepath}/
           cp -r src/.vscode ${basepath}/
           cp -r src/config/{chktex-config.rc,latexindent-config.yaml,ohmyposh-theme.json} ${basepath}/.config/
-          cp -r example/{example.tex,latexmkrc,README.tpl.md} ${basepath}/example/
-          # Generate example/README.md from template
-          cp example/README.tpl.md ${basepath}/example/README.md
-          echo "# LaTeX Devcontainer (${{ github.event.release.tag_name }})" > ${basepath}/Preamble.md
-          echo "" >> ${basepath}/Preamble.md
-          echo "This is the example LaTeX devcontainer release, using a prebuilt image with demo files." >> ${basepath}/Preamble.md
-          awk 'NR==FNR {p=p $0 "\n"; next} {sub(/{{ Preamble }}/, p)}1' ${basepath}/Preamble.md ${basepath}/example/README.md > temp && mv temp ${basepath}/example/README.md
-          awk '/<!-- BEGIN EXAMPLE -->/{p=1}/<!-- END EXAMPLE -->/{p=0}p' README.md > ${basepath}/Example.md
-          awk 'NR==FNR {p=p $0 "\n"; next} {sub(/{{ EXAMPLE }}/, p)}1' ${basepath}/Example.md ${basepath}/example/README.md > temp && mv temp ${basepath}/example/README.md
+          cp -r example/{example.tex,latexmkrc} ${basepath}/
+
           # Generate .devcontainer/README.md from template
           cp src/.devcontainer/README.tpl.md ${basepath}/.devcontainer/README.md
           awk 'NR==FNR {p=p $0 "\n"; next} {sub(/{{ Preamble }}/, p)}1' ${basepath}/Preamble.md ${basepath}/.devcontainer/README.md > temp && mv temp ${basepath}/.devcontainer/README.md
@@ -164,6 +158,7 @@ jobs:
           awk 'NR==FNR {p=p $0 "\n"; next} {sub(/{{ CONFIG }}/, p)}1' ${basepath}/Config.md ${basepath}/.devcontainer/README.md > temp && mv temp ${basepath}/.devcontainer/README.md
           awk '/<!-- BEGIN DEBUG -->/{p=1}/<!-- END DEBUG -->/{p=0}p' README.md > ${basepath}/Debug.md
           awk 'NR==FNR {p=p $0 "\n"; next} {sub(/{{ DEBUG }}/, p)}1' ${basepath}/Debug.md ${basepath}/.devcontainer/README.md > temp && mv temp ${basepath}/.devcontainer/README.md
+
           # Add release tag comments
           for file in ${basepath}/.devcontainer/*.json; do
             echo "// Release: ${{ github.event.release.tag_name }}" | cat - "$file" > temp && mv temp "$file"
@@ -174,6 +169,7 @@ jobs:
           # Replace {{TAG}} in Markdown and docker-compose.yml
           find ${basepath} -type f -name "*.md" -exec sed -i "s/{{TAG}}/${{ github.event.release.tag_name }}/g" {} \;
           sed -i "s|image: noctuidus/devcontainer-latex:{{TAG}}|image: noctuidus/devcontainer-latex:${{ github.event.release.tag_name }}|" ${basepath}/.devcontainer/docker-compose.yml
+
           # Create top-level README.md
           echo "# LaTeX Devcontainer (${{ github.event.release.tag_name }})" > ${basepath}/README-devcontainer.md
           echo "" >> ${basepath}/README-devcontainer.md
