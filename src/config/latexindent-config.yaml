@@ -115,3 +115,9 @@ noAdditionalIndentGlobal:
 # noAdditionalIndent:
 #    problem: 0
 #    solution: 0
+
+
+# Settings for custom indentation of tikzset child elements and tilde in keys
+fineTuning:
+   keyEqualsValuesBracesBrackets:
+      name: '[a-zA-Z@\*0-9_\/.\h:\#-~]+?'
