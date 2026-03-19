@@ -71,7 +71,7 @@ RUN <<EOF
 
     # install additional latex packages
     echo "Installing additional LaTeX packages (latexmk, latexindent, luaotfload, luatex)..."
-    tlmgr install latexmk latexindent luaotfload luatex
+    tlmgr install latexmk latexindent luaotfload luatex minted
     echo "Additional packages installed."
     texhash
 
@@ -123,15 +123,29 @@ RUN <<EOF
     apt-get install -y --no-install-recommends \
         openssh-client \
         git \
-        python3 \
+        nano \
         locales \
+        tzdata \
+        sudo \
+        python3 \
+        python3-pip \
+        python3-venv \
+        python3-dev \
         python3-pygments \
+        build-essential \
+        ffmpeg \
+        libcairo2-dev \
+        libpango1.0-dev \
+        pkg-config \
         gnuplot \
         poppler-utils \
         imagemagick \
-        tzdata \
-        sudo
+        ghostscript
+
     ln -s /usr/bin/python3 /usr/bin/python
+
+    # ImageMagick Policy anpassen (erlaubt PDF-Verarbeitung)
+    sed -i 's/<policy domain="coder" rights="none" pattern="PDF" \/>/<policy domain="coder" rights="read|write" pattern="PDF" \/>/g' /etc/ImageMagick-6/policy.xml
 
     # Create non-root user with sanitized username
     groupadd --gid $USER_GID $USER_NAME || true
@@ -142,8 +156,6 @@ RUN <<EOF
     echo "$USER_NAME ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$USER_NAME
     chmod 0440 /etc/sudoers.d/$USER_NAME
     chown root:root /etc/sudoers.d/${USER_NAME}
-
-    # mkdir -p "/home/${USER_NAME}/.ohmyposh" "/home/${USER_NAME}/.latexindent"
 
     # Configure Oh My Posh
     echo "export TERM=xterm" >> /home/${USER_NAME}/.bashrc
