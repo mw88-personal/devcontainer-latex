@@ -1,16 +1,18 @@
 # LaTeX Devcontainer
 
-A VS Code devcontainer for LaTeX development with TeX Live 2025, chktex, latexindent, Oh My Posh, and poppler-utils.
+A VS Code devcontainer for LaTeX development based on [qmcgaw/latexdevcontainer](https://hub.docker.com/r/qmcgaw/latexdevcontainer), with Oh My Posh, Python3, manim and poppler-utils.
 
 <!-- BEGIN FEATURES -->
 ## Features
-- **TeX Live 2025**: Full LaTeX environment with LuaHBTeX for modern typesetting.
+- **TeX Live 2026**: Full LaTeX environment with LuaHBTeX for modern typesetting.
 - **chktex**: Linting with customizable configurations (`chktex-config.rc`, `chktex-config-default.rc`).
 - **latexindent**: Code formatting with settings in `latexindent-config.yaml`.
 - **Oh My Posh**: Custom shell prompt via `ohmyposh-theme.json`.
 - **poppler-utils**: Tools for PDF manipulation, including `pdfseparate` for splitting PDFs.
 - **Git Integration**: Passes through host Git configuration (via environment variables or inherited settings).
 - **SSH Support**: Relies on host SSH agent (Windows/WSL2) for secure repository access.
+- **Manim Support**: Animate scientific videos with LaTeX an [Manim](https://github.com/3b1b/manim).
+- **Imagemagick**: Convert PDF to image formats using imagemagick and ghostscript.
 - **User/Permissions**: Runs as user `dev` (UID/GID 1001) for consistent permissions in WSL2.
 - **WSL2 Compatibility**: Optimized for Docker Desktop on WSL2 with LF line endings.
 <!-- END FEATURES -->
