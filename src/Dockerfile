@@ -25,7 +25,7 @@ EOF
 # COPY config/ohmyposh-theme.json /tmp/ohmyposh/theme.omp.json
 
 # Stage 2: Final image (Basiert nun auf dem aktualisierten qmcgaw Image)
-FROM qmcgaw/latexdevcontainer:latest AS main
+FROM qmcgaw/latexdevcontainer:latest-full AS main
 
 ARG USER_UID
 ARG USER_GID
