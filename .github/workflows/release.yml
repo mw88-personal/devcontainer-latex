@@ -95,7 +95,7 @@ jobs:
           cp src/.gitattributes ${basepath}/
           cp src/.gitignore ${basepath}/
           cp -r src/.vscode ${basepath}/
-          cp -r src/config/{chktex-config.rc,chktex-config-default.rc,latexindent-config.yaml,ohmyposh-theme.json,texlive-profile.tlp} ${basepath}/.config/
+          cp -r src/config/{chktex-config.rc,chktex-config-default.rc,latexindent-config.yaml,ohmyposh-theme.json} ${basepath}/.config/
           cp src/Dockerfile ${basepath}/.devcontainer/
 
           # Generate README.md from template
